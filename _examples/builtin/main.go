@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/savaki/swag"
-	"github.com/savaki/swag/endpoint"
-	"github.com/savaki/swag/swagger"
+	"github.com/MarkSonghurst/swag"
+	"github.com/MarkSonghurst/swag/endpoint"
+	"github.com/MarkSonghurst/swag/swagger"
 )
 
 func handle(w http.ResponseWriter, req *http.Request) {
@@ -41,7 +41,7 @@ func main() {
 	)
 	get := endpoint.New("get", "/pet/{petId}", "Find pet by ID",
 		endpoint.Handler(handle),
-		endpoint.Path("petId", "integer", "ID of pet to return", true),
+		endpoint.Path("petId", swagger.Items{}, nil, "ID of pet to return", true),
 		endpoint.Response(http.StatusOK, Pet{}, "successful operation"),
 		endpoint.Security("petstore_auth", "read:pets"),
 	)
@@ -50,7 +50,7 @@ func main() {
 		swag.Endpoints(post, get),
 		swag.Security("petstore_auth", "read:pets"),
 		swag.SecurityScheme("petstore_auth",
-			swagger.OAuth2Security("accessCode", "http://example.com/oauth/authorize", "http://example.com/oauth/token"),
+			swagger.OAuth2Security("accessCode", "http://<hostname>/oauth/authorize", "http://<hostname>/oauth/token"),
 			swagger.OAuth2Scope("write:pets", "modify pets in your account"),
 			swagger.OAuth2Scope("read:pets", "read your pets"),
 		),

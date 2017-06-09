@@ -111,6 +111,8 @@ func OAuth2Scope(scope, description string) SecuritySchemeOption {
 
 // OAuth2Security defines a security scheme for OAuth2 authentication. Flow can
 // be one of implicit, password, application, or accessCode.
+// Use the token <hostname> in AuthorizationURL and TokenURL to have it dynamically
+// replaced by the hostname as seen by the Client, during request handling.
 func OAuth2Security(flow, authorizationURL, tokenURL string) SecuritySchemeOption {
 	return func(securityScheme *SecurityScheme) {
 		securityScheme.Type = "oauth2"
@@ -212,16 +214,16 @@ func (e *Endpoints) Walk(fn func(endpoint *Endpoint)) {
 
 // API provides the top level encapsulation for the swagger definition
 type API struct {
-	Swagger             string                    `json:"swagger,omitempty"`
-	Info                Info                      `json:"info"`
-	BasePath            string                    `json:"basePath,omitempty"`
-	Schemes             []string                  `json:"schemes,omitempty"`
-	Paths               map[string]*Endpoints     `json:"paths,omitempty"`
-	Definitions         map[string]Object         `json:"definitions,omitempty"`
-	Tags                []Tag                     `json:"tags"`
-	Host                string                    `json:"host"`
-	SecurityDefinitions map[string]SecurityScheme `json:"securityDefinitions,omitempty"`
-	Security            *SecurityRequirement      `json:"security,omitempty"`
+	Swagger             string                     `json:"swagger,omitempty"`
+	Info                Info                       `json:"info"`
+	BasePath            string                     `json:"basePath,omitempty"`
+	Schemes             []string                   `json:"schemes,omitempty"`
+	Paths               map[string]*Endpoints      `json:"paths,omitempty"`
+	Definitions         map[string]Object          `json:"definitions,omitempty"`
+	Tags                []Tag                      `json:"tags"`
+	Host                string                     `json:"host"`
+	SecurityDefinitions map[string]*SecurityScheme `json:"securityDefinitions,omitempty"`
+	Security            *SecurityRequirement       `json:"security,omitempty"`
 }
 
 func (a *API) clone() *API {
@@ -314,6 +316,8 @@ func (a *API) AddEndpoint(e *Endpoint) {
 
 // Handler is a factory method that generates an http.HandlerFunc; if enableCors is true, then the handler will generate
 // cors headers
+// The Swagger Host value is updated with the hostname as seen by the Client.
+// Optionally any Security URLs will also have their hostname updated.
 func (a *API) Handler(enableCors bool) http.HandlerFunc {
 	mux := &sync.Mutex{}
 	byHostAndScheme := map[string]*API{}
@@ -352,6 +356,12 @@ func (a *API) Handler(enableCors bool) http.HandlerFunc {
 			v = a.clone()
 			v.Host = req.Host
 			v.Schemes = []string{scheme}
+			// Optionally update Security URLs with the hostname as seen from the Client
+			for n, def := range v.SecurityDefinitions {
+				v.SecurityDefinitions[n].AuthorizationURL = strings.Replace(def.AuthorizationURL, "<hostname>", req.Host, -1)
+				v.SecurityDefinitions[n].TokenURL = strings.Replace(def.TokenURL, "<hostname>", req.Host, -1)
+			}
+
 			byHostAndScheme[hostAndScheme] = v
 		}
 		mux.Unlock()

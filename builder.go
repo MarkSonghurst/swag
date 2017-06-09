@@ -124,13 +124,13 @@ func Endpoints(endpoints ...*swagger.Endpoint) Option {
 func SecurityScheme(name string, options ...swagger.SecuritySchemeOption) Option {
 	return func(builder *Builder) {
 		if builder.API.SecurityDefinitions == nil {
-			builder.API.SecurityDefinitions = map[string]swagger.SecurityScheme{}
+			builder.API.SecurityDefinitions = map[string]*swagger.SecurityScheme{}
 		}
 
-		scheme := swagger.SecurityScheme{}
+		scheme := &swagger.SecurityScheme{}
 
 		for _, opt := range options {
-			opt(&scheme)
+			opt(scheme)
 		}
 
 		builder.API.SecurityDefinitions[name] = scheme
