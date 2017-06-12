@@ -18,7 +18,7 @@ type Items struct {
 	ExclusiveMaximum bool `json:"exclusiveMaximum,omitempty"`
 	MultipleOf       int  `json:"multipleOf,omitempty"`
 
-	Default string `json:"default"`
+	Default string `json:"default,omitempty"`
 
 	// Swagger 2.0 states these fields are only applicable to arrays
 	MinItems    int  `json:"minItems,omitempty"`
