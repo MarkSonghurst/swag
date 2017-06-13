@@ -64,7 +64,7 @@ type Parameter struct {
 
 // Endpoint represents an endpoint from the swagger doc
 type Endpoint struct {
-	Tags        []string            `json:"tags"`
+	Tags        []string            `json:"tags,omitempty"`
 	Path        string              `json:"-"`
 	Method      string              `json:"-"`
 	Summary     string              `json:"summary,omitempty"`
